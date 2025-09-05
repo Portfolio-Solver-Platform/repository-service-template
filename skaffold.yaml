@@ -1,0 +1,98 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: <name>-skaffold
+build:
+  artifacts:
+    - image: <name>-skaffold
+      context: .
+  tagPolicy:
+    gitCommit: {}
+
+deploy:
+  helm:
+    releases:
+      - name: metrics-server
+        repo: https://kubernetes-sigs.github.io/metrics-server/
+        remoteChart: metrics-server
+        namespace: kube-system
+
+
+
+profiles:
+  - name: dev
+    activation:
+      - command: dev
+    build:
+      local:
+        push: false
+    deploy:
+      helm:
+        releases:
+          - name: <name>
+            chartPath: helm
+            namespace: default
+            setValueTemplates:
+              image: "{{.IMAGE_FULLY_QUALIFIED}}"
+
+          - name: metrics-server
+            repo: https://kubernetes-sigs.github.io/metrics-server/
+            remoteChart: metrics-server
+            namespace: kube-system
+            setValues:
+              args[0]: --kubelet-insecure-tls
+
+    portForward: # TODO: remove portword when we have ingress
+      - resourceType: service
+        resourceName: <name>
+        namespace: default
+        port: 8080
+        localPort: 8080
+
+  - name: staging
+    build:
+      local:
+        push: false # TODO set to true
+      # optional: set your staging registry
+      # defaultRepo: "registry.example.com/staging"
+    deploy:
+      helm:
+        releases:
+          - name: <name>
+            chartPath: helm
+            setValueTemplates:
+              image: "{{.IMAGE_FULLY_QUALIFIED}}"
+            valuesFiles:
+              - helm/values-prod.yaml
+            wait: true
+            upgradeOnChange: true
+
+          - name: metrics-server
+            repo: https://kubernetes-sigs.github.io/metrics-server/
+            remoteChart: metrics-server
+            namespace: kube-system
+            setValues:
+              args[0]: --kubelet-insecure-tls
+
+  - name: prod
+    build:
+      local:
+        push: true
+      # optional: set your prod registry
+      # defaultRepo: "registry.example.com/prod"
+    deploy:
+      helm:
+        releases:
+          - name: <name>
+            chartPath: helm
+            setValueTemplates:
+              image: "{{.IMAGE_FULLY_QUALIFIED}}"
+            valuesFiles:
+              - helm/values-prod.yaml
+            wait: true
+            upgradeOnChange: true
+
+          - name: metrics-server
+            repo: https://kubernetes-sigs.github.io/metrics-server/
+            remoteChart: metrics-server
+            namespace: kube-system
