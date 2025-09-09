@@ -1,28 +1,27 @@
 # repository-service-template
-All template files used for a service
+All template files used for a service. Here is how to use the template yourself:
+## Copy
+ copy all files (except the README.md) 
 
-- copy all files (except the README) and customize them as needed
-- setup github workflows
-- install kubernetes metric server:
-```
-helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-helm repo update
-helm upgrade --install metrics-server metrics-server/metrics-server -n kube-system
-```
-- replace all occurences of `<name>` with your desired name of the service (can just be the repository name)
-The following files is:
+## Replace
+- replace all occurences of `<name>` with your desired name of the service (can just be the repository name). It is in the following files:
 ```
 ./skaffold.yaml
 ./helm/Chart.yaml
 ./helm/templates/deployment.yaml
 ./helm/values.yaml
+./pyproject.toml
 ```
-    on my mac I can just run this:
+
+#### A semi automatic way of replacing `<name>`
+on my mac I can just run this:
 ```
 find skaffold.yaml -type f -exec sed -i '' 's/solver-director/<name>/g' {} + 
 find helm/ -type f -exec sed -i '' 's/solver-director/<name>/g' {} +
 ```
+except in pyproject I need to enter it manually in the top of the file, where it says: `name = "service" # replace service with <name> 
+`
 
+
+## Customize settings
 - go through all settings and set them yourself to what u want
-
-NOTE: a CI/CD pipeline is still missing
