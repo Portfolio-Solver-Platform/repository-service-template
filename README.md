@@ -25,3 +25,11 @@ except in pyproject I need to enter it manually in the top of the file, where it
 
 ## Customize settings
 - go through all settings and set them yourself to what u want
+
+
+## Generate requirement files and updating dependencies
+You can manually create/update dependencies by:
+```toml
+pip-compile pyproject.toml -o requirements.txt --strip-extras
+pip-compile pyproject.toml --extra dev -o requirements-dev.txt --strip-extras
+```
